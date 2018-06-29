@@ -1,0 +1,88 @@
+public class MainActivity extends AppCompatActivity {
+
+    private Context mContext;
+    private TextView tv_gradient;
+    private Button btn_apply;
+    private RadioGroup mradio_roup;
+    private int mWidth;
+    private int mHeight;
+    private Random mRandom = new Random();
+    private Shader shader;
+    private GradientManager mGradientManager;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Get the application context
+        mContext = getApplicationContext();
+
+        // Get the widgets reference from XML layout
+        tv_gradient = (TextView) findViewById(R.id.tv);
+        btn_apply = (Button) findViewById(R.id.btn);
+        mradio_roup = (RadioGroup) findViewById(R.id.rg);
+
+        // Set a click listener for Button widget
+        btn_apply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get the TextView width and height in pixels
+                mWidth = tv_gradient.getWidth();
+                mHeight = tv_gradient.getHeight();
+                Point size = new Point(mWidth,mHeight);
+
+                // Initializing a new instance of GradientManager class
+                mGradientManager = new GradientManager(mContext,size);
+
+                // Get a random indicator to define next gradient type
+                int indicator = mRandom.nextInt(3);
+
+                if(indicator == 0){
+                    shader = mGradientManager.getRandomLinearGradient();
+                    tv_gradient.setText("Linear Gradient");
+                }else if(indicator == 1){
+                    shader = mGradientManager.getRandomRadialGradient();
+                    tv_gradient.setText("Radial Gradient");
+                }else {
+                    shader = mGradientManager.getRandomSweepGradient();
+                    tv_gradient.setText("Sweep Gradient");
+                }
+
+                tv_gradient.setLayerType(View.LAYER_TYPE_SOFTWARE,null);
+
+                tv_gradient.getPaint().setShader(shader);
+            }
+        });
+
+        // Set a checked change listener for RadioGroup
+        mradio_roup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if (i == R.id.rb_normal) {
+                    // Remove the mask filter
+                    tv_gradient.getPaint().setMaskFilter(null);
+                } else if (i == R.id.rb_emboss) {
+
+                    EmbossMaskFilter embossFilter = new EmbossMaskFilter(
+                            new float[]{1f, 5f, 1f}, // direction of the light source
+                            0.8f, // ambient light between 0 to 1
+                            8, // specular highlights
+                            7f // blur before applying lighting
+                    );
+                    // Apply the emboss mask filter
+                    tv_gradient.getPaint().setMaskFilter(embossFilter);
+                } else if (i == R.id.rb_deboss) {
+                    EmbossMaskFilter debossFilter = new EmbossMaskFilter(
+                            new float[]{0f, -1f, 0.5f}, // direction of the light source
+                            0.8f, // ambient light between 0 to 1
+                            13, // specular highlights
+                            7.0f // blur before applying lighting
+                    );
+                    // Apply the deboss mask filter
+                    tv_gradient.getPaint().setMaskFilter(debossFilter);
+                }
+            }
+        });
+    }
+}
